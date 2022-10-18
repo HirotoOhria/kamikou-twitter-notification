@@ -1,9 +1,7 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"os"
 
 	"github.com/GoogleCloudPlatform/functions-framework-go/funcframework"
 	"github.com/joho/godotenv"
@@ -17,8 +15,6 @@ func init() {
 	if err := godotenv.Load("local/.env"); err != nil {
 		log.Fatalf("Error loading .env file: %v\n", err)
 	}
-
-	fmt.Println(os.Getenv("FUNCTION_TARGET"))
 }
 
 func main() {
