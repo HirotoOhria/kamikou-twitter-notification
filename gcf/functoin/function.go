@@ -8,9 +8,9 @@ import (
 )
 
 func init() {
-	functions.HTTP("HelloWorld", helloWorld)
+	functions.HTTP("HelloWorld", HelloWorld)
 }
 
-func helloWorld(w http.ResponseWriter, r *http.Request) {
+func HelloWorld(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "Hello, World!")
 }
