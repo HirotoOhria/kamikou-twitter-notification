@@ -1,4 +1,4 @@
-package functoin
+package gcf
 
 import (
 	"fmt"
@@ -7,10 +7,12 @@ import (
 	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
 )
 
+const entryPoint = "HelloWorld"
+
 func init() {
-	functions.HTTP("HelloWorld", HelloWorld)
+	functions.HTTP(entryPoint, helloWorld)
 }
 
-func HelloWorld(w http.ResponseWriter, r *http.Request) {
+func helloWorld(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "Hello, World!")
 }

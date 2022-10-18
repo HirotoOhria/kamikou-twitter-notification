@@ -6,7 +6,7 @@ import (
 	"github.com/GoogleCloudPlatform/functions-framework-go/funcframework"
 	"github.com/joho/godotenv"
 
-	_ "hiroto.ohira/kamikou-twitter-notification/functoin"
+	_ "hiroto.ohira/kamikou-twitter-notification"
 )
 
 const port = "8080"
