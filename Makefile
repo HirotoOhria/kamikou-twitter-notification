@@ -1,6 +1,6 @@
 gcf_region = asia-northeast1
 gcf_function_name = kamikou-twitter-notification
-gcf_entry_point = HelloWorld
+gcf_entry_point = NoticeTweetsToSlack
 
 run:
 	cd gcf && go run local/main.go
@@ -14,7 +14,8 @@ deploy:
 		--source=. \
 		--entry-point=$(gcf_entry_point) \
 		--trigger-http \
-		--allow-unauthenticated
+		--allow-unauthenticated \
+		--set-env-vars TWITTER_BEARER_TOKEN=$(TWITTER_BEARER_TOKEN)
 
 url:
 	gcloud functions describe $(gcf_function_name) \
