@@ -1,6 +1,7 @@
 package gcf
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -9,9 +10,7 @@ import (
 	"os"
 )
 
-const (
-	recentSearchURL = "https://api.twitter.com/2/tweets/search/recent"
-)
+type useRequest func(req *http.Request)
 
 type twitterClient struct {
 	bearerToken string
@@ -23,9 +22,26 @@ func newTwitterClient() *twitterClient {
 	}
 }
 
+func (tc *twitterClient) getURL(path string) string {
+	return fmt.Sprintf("https://api.twitter.com/2/%s", path)
+}
+
 func (tc *twitterClient) recentSearch() (*recentSearchResponse, error) {
-	res, err := tc.recentSearchRequest()
+	b, err := tc.request(&requestInput{
+		method: "GET",
+		path:   "tweets/search/recent",
+		body:   nil,
+		useRequest: func(req *http.Request) {
+			tc.recentSearchHeader(req.Header)
+			tc.recentSearchQueryParams(req.URL)
+		},
+	})
 	if err != nil {
+		return nil, err
+	}
+
+	res := new(recentSearchResponse)
+	if err := json.Unmarshal(b, res); err != nil {
 		return nil, err
 	}
 
@@ -35,14 +51,25 @@ func (tc *twitterClient) recentSearch() (*recentSearchResponse, error) {
 	return res, nil
 }
 
-func (tc *twitterClient) recentSearchRequest() (*recentSearchResponse, error) {
-	req, err := http.NewRequest("GET", recentSearchURL, nil)
+type requestInput struct {
+	method     string
+	path       string
+	body       interface{}
+	useRequest useRequest
+}
+
+func (tc *twitterClient) request(input *requestInput) ([]byte, error) {
+	body, err := json.Marshal(input.body)
 	if err != nil {
 		return nil, err
 	}
 
-	tc.recentSearchHeader(req.Header)
-	tc.recentSearchQueryParams(req.URL)
+	req, err := http.NewRequest("GET", tc.getURL(input.path), bytes.NewBuffer(body))
+	if err != nil {
+		return nil, err
+	}
+
+	input.useRequest(req)
 
 	cl := http.DefaultClient
 
@@ -57,12 +84,7 @@ func (tc *twitterClient) recentSearchRequest() (*recentSearchResponse, error) {
 		return nil, err
 	}
 
-	res := new(recentSearchResponse)
-	if err := json.Unmarshal(b, res); err != nil {
-		return nil, err
-	}
-
-	return res, nil
+	return b, nil
 }
 
 func (tc *twitterClient) recentSearchHeader(header http.Header) {
