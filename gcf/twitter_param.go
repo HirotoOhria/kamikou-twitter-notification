@@ -41,6 +41,19 @@ func (t tweet) IsRT() bool {
 	return head == "RT"
 }
 
+func (t tweet) IsTradeWithMoney() bool {
+	lines := strings.Split(t.Text, "\n")
+	for _, line := range lines {
+		if strings.Contains(line, "求") {
+			if strings.Contains(line, "定価") || strings.Contains(line, "手数料") {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
 func (t tweet) CreatedAtAsTime() time.Time {
 	ti, _ := time.Parse("2006-01-02T15:04:05.000Z", t.CreatedAt)
 	return ti.Local()
