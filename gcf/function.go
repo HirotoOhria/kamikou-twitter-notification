@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
 )
@@ -12,6 +13,7 @@ const entryPoint = "NoticeTweetsToSlack"
 
 func init() {
 	functions.HTTP(entryPoint, noticeTweetsToSlack)
+	time.Local = time.FixedZone("Asia/Tokyo", 9*60*60)
 }
 
 func noticeTweetsToSlack(w http.ResponseWriter, r *http.Request) {

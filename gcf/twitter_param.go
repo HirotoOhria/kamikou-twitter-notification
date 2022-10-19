@@ -43,7 +43,7 @@ func (t tweet) IsRT() bool {
 
 func (t tweet) CreatedAtAsTime() time.Time {
 	ti, _ := time.Parse("2006-01-02T15:04:05.000Z", t.CreatedAt)
-	return ti
+	return ti.Local()
 }
 
 type users []user
