@@ -16,7 +16,7 @@ func Test_tweet_IsRT(t1 *testing.T) {
 		want   bool
 	}{
 		{
-			name: "RTであること",
+			name: "リツイートされたツイートの場合、RTであること",
 			fields: fields{
 				Text: `RT @xxx_xxx_: 【交換】
 ライブ 3rdシングル 
@@ -28,7 +28,7 @@ func Test_tweet_IsRT(t1 *testing.T) {
 			want: true,
 		},
 		{
-			name: "RTでないこと",
+			name: "通常のツイートの場合、RTでないこと",
 			fields: fields{
 				Text: `【交換】
 ライブ 3rdシングル 
@@ -36,6 +36,20 @@ func Test_tweet_IsRT(t1 *testing.T) {
 トレーディングカード
 
 よろしく…`,
+			},
+			want: false,
+		},
+		{
+			name: "引用リツイートの場合、RTでないこと",
+			fields: fields{
+				Text: `プロセカ 神高文化祭
+神山高校文化祭 チケット
+
+譲: 11/6(日) 入場+演劇15時
+
+求: 定価+手数料
+
+お声かけは引用先までお願いします https://t.co/V8nX2h7ABw`,
 			},
 			want: false,
 		},
