@@ -88,3 +88,17 @@ func (rsr *recentSearchResponse) SetURL() {
 func getTweetURL(userName, tweetID string) string {
 	return fmt.Sprintf("https://twitter.com/%s/status/%s", userName, tweetID)
 }
+
+type replayTweetRequest struct {
+	Text   string `json:"text"`
+	Replay struct {
+		InReplyToTweetID string `json:"in_reply_to_tweet_id"`
+	} `json:"replay"`
+}
+
+type replayTweetResponse struct {
+	Tweet struct {
+		ID   string `json:"id"`
+		Text string `json:"text"`
+	} `json:"data"`
+}

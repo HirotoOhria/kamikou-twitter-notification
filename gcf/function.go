@@ -27,6 +27,9 @@ func noticeTweetsToSlack(w http.ResponseWriter, r *http.Request) {
 		log.Fatalf("twitter recet serarch error: %v", err)
 	}
 
+	tweets.SetURL()
+	tweets.Tweets = tweets.Tweets.filterByNonRT()
+
 	var msg string
 	for _, t := range tweets.Tweets {
 		msg += fmt.Sprintln("{")

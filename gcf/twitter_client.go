@@ -10,7 +10,7 @@ import (
 	"os"
 )
 
-type useRequest func(req *http.Request)
+type addQueryParams func(url *url.URL)
 
 type twitterClient struct {
 	bearerToken string
@@ -31,9 +31,14 @@ func (tc *twitterClient) recentSearch() (*recentSearchResponse, error) {
 		method: "GET",
 		path:   "tweets/search/recent",
 		body:   nil,
-		useRequest: func(req *http.Request) {
-			tc.recentSearchHeader(req.Header)
-			tc.recentSearchQueryParams(req.URL)
+		addQueryParams: func(url *url.URL) {
+			params := url.Query()
+			params.Add("query", "神高 譲 6")
+			params.Add("sort_order", "recency")
+			params.Add("tweet.fields", "created_at")
+			params.Add("expansions", "author_id")
+
+			url.RawQuery = params.Encode()
 		},
 	})
 	if err != nil {
@@ -45,17 +50,14 @@ func (tc *twitterClient) recentSearch() (*recentSearchResponse, error) {
 		return nil, err
 	}
 
-	res.SetURL()
-	res.Tweets = res.Tweets.filterByNonRT()
-
 	return res, nil
 }
 
 type requestInput struct {
-	method     string
-	path       string
-	body       interface{}
-	useRequest useRequest
+	method         string
+	path           string
+	body           interface{}
+	addQueryParams addQueryParams
 }
 
 func (tc *twitterClient) request(input *requestInput) ([]byte, error) {
@@ -69,7 +71,11 @@ func (tc *twitterClient) request(input *requestInput) ([]byte, error) {
 		return nil, err
 	}
 
-	input.useRequest(req)
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tc.bearerToken))
+
+	if input.addQueryParams != nil {
+		input.addQueryParams(req.URL)
+	}
 
 	cl := http.DefaultClient
 
@@ -85,18 +91,4 @@ func (tc *twitterClient) request(input *requestInput) ([]byte, error) {
 	}
 
 	return b, nil
-}
-
-func (tc *twitterClient) recentSearchHeader(header http.Header) {
-	header.Add("Authorization", fmt.Sprintf("Bearer %s", tc.bearerToken))
-}
-
-func (tc *twitterClient) recentSearchQueryParams(url *url.URL) {
-	params := url.Query()
-	params.Add("query", "神高 譲 6")
-	params.Add("sort_order", "recency")
-	params.Add("tweet.fields", "created_at")
-	params.Add("expansions", "author_id")
-
-	url.RawQuery = params.Encode()
 }
