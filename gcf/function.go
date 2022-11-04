@@ -23,13 +23,44 @@ func noticeTweetsToSlack(w http.ResponseWriter, r *http.Request) {
 
 	tweets, err := twitterClient.recentSearch()
 	if err != nil {
-		fmt.Fprintf(w, "twitter recet serarch error: %v", err)
-		log.Fatalf("twitter recet serarch error: %v", err)
+		handleError(w, "twitter recent search error", err)
 	}
 
 	tweets.SetURL()
 	tweets.Tweets = tweets.Tweets.filterByNonRT()
+	tweets.Tweets = tweets.Tweets.filterSinceLastBatch()
 
+	for _, t := range tweets.Tweets {
+		if !t.IsTradeWithMoney() {
+			continue
+		}
+
+		if _, err := twitterClient.replayTweet(t.ID, replayText); err != nil {
+			handleError(w, "twitter replay tweet error", err)
+		}
+	}
+
+	// TODO delete after debug.
+	tmp(twitterClient)
+
+	response(w, tweets)
+}
+
+func tmp(client *twitterClient) {
+	res, err := client.replayTweet("1574915432296783872", "test")
+	if err != nil {
+		fmt.Printf("tmp replay tweet error: %v", err)
+	}
+
+	fmt.Printf("replay tweeet res: %+v\n", res)
+}
+
+func handleError(w http.ResponseWriter, msg string, err error) {
+	fmt.Fprintf(w, "%s: %v", msg, err)
+	log.Fatalf("%s: %v", msg, err)
+}
+
+func response(w http.ResponseWriter, tweets *recentSearchResponse) {
 	var msg string
 	for _, t := range tweets.Tweets {
 		msg += fmt.Sprintln("{")

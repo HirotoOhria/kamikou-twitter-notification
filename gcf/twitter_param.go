@@ -6,6 +6,8 @@ import (
 	"time"
 )
 
+const batchExecDuration = 5 * time.Minute
+
 type recentSearchResponse struct {
 	Tweets   tweets `json:"data"`
 	Includes struct {
@@ -19,6 +21,19 @@ func (ts tweets) filterByNonRT() tweets {
 	var res tweets
 	for _, t := range ts {
 		if !t.IsRT() {
+			res = append(res, t)
+		}
+	}
+
+	return res
+}
+
+func (ts tweets) filterSinceLastBatch() tweets {
+	batchExecTime := time.Now().Add(-batchExecDuration)
+
+	var res tweets
+	for _, t := range ts {
+		if t.CreatedAtAsTime().After(batchExecTime) {
 			res = append(res, t)
 		}
 	}
@@ -90,10 +105,12 @@ func getTweetURL(userName, tweetID string) string {
 }
 
 type replayTweetRequest struct {
-	Text   string `json:"text"`
-	Replay struct {
-		InReplyToTweetID string `json:"in_reply_to_tweet_id"`
-	} `json:"replay"`
+	Text   string                   `json:"text"`
+	Replay replayTweetRequestReplay `json:"replay"`
+}
+
+type replayTweetRequestReplay struct {
+	InReplyToTweetID string `json:"in_reply_to_tweet_id"`
 }
 
 type replayTweetResponse struct {

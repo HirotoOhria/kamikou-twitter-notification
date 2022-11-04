@@ -53,6 +53,34 @@ func (tc *twitterClient) recentSearch() (*recentSearchResponse, error) {
 	return res, nil
 }
 
+const replayText = `はじめまして、検索から失礼いたします。
+もしよろしければ11/6のチケットをお譲り頂くことは可能でしょうか？
+ご検討の程よろしくお願いいたします🙇`
+
+func (tc *twitterClient) replayTweet(toTweetID, text string) (*replayTweetResponse, error) {
+	resp, err := tc.request(&requestInput{
+		method: "POST",
+		path:   "tweets",
+		body: &replayTweetRequest{
+			Text: text,
+			Replay: replayTweetRequestReplay{
+				InReplyToTweetID: toTweetID,
+			},
+		},
+		addQueryParams: nil,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	res := new(replayTweetResponse)
+	if err := json.Unmarshal(resp, res); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
 type requestInput struct {
 	method         string
 	path           string
